@@ -5,10 +5,10 @@
 
 ## 🚧 In Development
 ![Windows](https://img.shields.io/badge/Windows-red)
-![Linux](https://img.shields.io/badge/Linux-red)
-![Web](https://img.shields.io/badge/Web-red)
+![Linux](https://img.shields.io/badge/Linux-green)
+![Web](https://img.shields.io/badge/Web-green)
 
-# UnyxEngine
+# Unyx Engine
 Minimal C++ game engine built with a true ECS and Data-Oriented Design (DoD) principles.  
 
 Unyx is a lightweight engine focused on simplicity, learning, experimentation, and building games from the ground up.  

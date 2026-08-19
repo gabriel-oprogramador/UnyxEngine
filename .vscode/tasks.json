@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build Sandbox",
+            "type": "shell",
+            "windows": {
+                "command": "${workspaceFolder}/udt.bat",
+                "args": [
+                    "dev",
+                    "TARGET=Sandbox"
+                ]
+            },
+            "linux": {
+                "command": "${workspaceFolder}/udt.sh",
+                "args": [
+                    "dev",
+                    "TARGET=Sandbox"
+                ]
+            },
+            "problemMatcher": {
+                "owner": "unyx",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(fatal error|error|warning|note|remark):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }
+        }
+    ]
+}
