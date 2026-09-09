@@ -12,9 +12,32 @@ using uint16 = uint16_t;
 using uint32 = uint32_t;
 using uint64 = uint64_t;
 using usize = size_t;
+using intptr = intptr_t;
+using uintptr = uintptr_t;
 using cstring = const char*;
 
+#if defined(PLATFORM_WINDOWS)
+
+#if defined(UNYX_ENGINE_BUILD)
+#define ENGINE_API __declspec(dllexport)
+#else
+#define ENGINE_API __declspec(dllimport)
+#endif
+#define GAME_API extern "C" __declspec(dllexport)
+
+#elif defined(PLATFORM_LINUX)
+
+#if defined(UNYX_ENGINE_BUILD)
+#define ENGINE_API __attribute__((visibility("default")))
+#else
+#define ENGINE_API
+#endif
+#define GAME_API extern "C" __attribute__((visibility("default")))
+
+#else
+#define ENGINE_API
 #define GAME_API extern "C"
+#endif
 
 #define XMACRO_KEYS(T) \
   T(KEY_UNKNOWN)       \

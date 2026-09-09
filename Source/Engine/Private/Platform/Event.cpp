@@ -20,8 +20,8 @@ namespace Platform {
   bool PushEvent(const PEvent& Event) {
     std::lock_guard<std::mutex> lock(SEventQueue.mutex);
 
-    UE_ASSERT(SEventQueue.count < EVENT_QUEUE_CAPACITY);
     if(SEventQueue.count >= EVENT_QUEUE_CAPACITY) {
+      UE_WARNING("Event ID:%u", (uint32)Event.type);
       return false;
     }
 

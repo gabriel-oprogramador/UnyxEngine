@@ -3,7 +3,7 @@
 #include "Renderer/Types.h"
 
 namespace RHI {
-  void Clear();
-  void ClearColor(const FColor& Color);
-  void SetViewport(const FViewport& Viewport);
+  ENGINE_API void Clear();
+  ENGINE_API void ClearColor(const FColor& Color);
+  ENGINE_API void SetViewport(const FViewport& Viewport);
 }  // namespace RHI

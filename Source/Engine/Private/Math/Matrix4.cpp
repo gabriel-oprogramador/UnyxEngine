@@ -12,7 +12,7 @@ FMatrix4 FMatrix4::MakeIdentity() {
 }
 
 FMatrix4 FMatrix4::MakePerspective(float Fov, float Aspect, float ZNear, float ZFar) {
-  Fov = (float)(Fov * (M_PI / 180.0));
+  Fov = FMath::Degrees(Fov);
   const float tanHalfFov = (float)tan(Fov / 2);
   FMatrix4 m = FMatrix4::MakeIdentity();
   m.e[0][0] = 1 / (Aspect * tanHalfFov);

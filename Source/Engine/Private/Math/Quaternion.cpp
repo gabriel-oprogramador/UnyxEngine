@@ -26,7 +26,7 @@ FRotator FQuat::ToRotator() const {
   yaw = atan2f(siny_cosp, cosy_cosp);
   float sinp = 2.0f * (w * x + y * z);
   if(fabsf(sinp) >= 1.0f) {
-    pitch = copysignf(M_PI / 2.0f, sinp);  // +-90° se sinp ≈ ±1
+    pitch = copysignf(FMath::HalfPi, sinp);  // +-90° se sinp ≈ ±1
   } else {
     pitch = asinf(sinp);
   }

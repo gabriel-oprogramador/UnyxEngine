@@ -7,7 +7,6 @@ TOOLCHAIN_DIR = Toolchain
 ZIG_DIR = $(TOOLCHAIN_DIR)/Zig/0.15.2
 EMSDK_DIR = $(TOOLCHAIN_DIR)/Emsdk
 EMSCRIPTEN_DIR = $(EMSDK_DIR)/upstream/emscripten
-NODE = $(firstword $(wildcard $(EMSDK_DIR)/node/*/bin/node))
 LIVE_SERVER = $(TOOLCHAIN_DIR)/Live-Server/node_modules/live-server/live-server.js
 
 BUILD_TYPE ?= Development
@@ -16,9 +15,11 @@ BUILD_TYPE ?= Development
 UNAME := $(shell uname -s | tr A-Z a-z)
 ifeq ($(OS), Windows_NT)
 PLATFORM ?= Windows
+NODE = $(firstword $(wildcard $(EMSDK_DIR)/node/*/node.exe))
 USER_DATA_DIR := $(subst \,/,$(LOCALAPPDATA))
 else ifeq ($(UNAME), linux)
 PLATFORM ?= Linux
+NODE = $(firstword $(wildcard $(EMSDK_DIR)/node/*/bin/node))
 USER_DATA_DIR := $(if $(XDG_DATA_HOME),$(XDG_DATA_HOME),$(HOME)/.local/share)
 else 
 $(error Host not supported)
@@ -42,13 +43,6 @@ DIRS   = $(dir $(OBJ))
 # Project Infos
 PROJECT_FLAGS += -DPROJECT_NAME=\"$(notdir $(CURDIR))\"
 PROJECT_FLAGS += -DPROJECT_PATH=\"$(PROJECT_PATH)\"
-
-TARGET_DIR = Source/Games
-SOURCE_DIR = Source/Games/$(TARGET)
-ifeq ($(TARGET), Engine)
-TARGET_DIR = Source
-SOURCE_DIR = Source/Engine
-endif
 
 JSONS = $(shell find Intermediate/Build/$(PLATFORM)/$(BUILD_TYPE) -type f -name "*.json")
 define GENERATE_COMPILE_COMMANDS

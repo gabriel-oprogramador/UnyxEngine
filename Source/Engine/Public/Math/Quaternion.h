@@ -4,7 +4,7 @@
 struct FVector3;
 struct FRotator;
 
-struct FQuat {
+struct ENGINE_API FQuat {
   float x;
   float y;
   float z;

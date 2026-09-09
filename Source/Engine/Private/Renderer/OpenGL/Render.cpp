@@ -1,19 +1,10 @@
 #ifdef RENDERER_OPENGL
 #include "Renderer/RHI.h"
-#include "Platform/Platform.h"
 #include "ApiGL.h"
 
 namespace RHI {
 
   void Clear() {
-    float time = Platform::TimeGetNow();
-    float speed = 0.5f;
-    float angle = time * speed;
-    float r = (sinf(angle) + 1.0f) / 2.0f;
-    float g = (sinf(angle + 2.094f) + 1.0f) / 2.0f;
-    float b = (sinf(angle + 4.188f) + 1.0f) / 2.0f;
-    glClearColor(r, g, b, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   }
 

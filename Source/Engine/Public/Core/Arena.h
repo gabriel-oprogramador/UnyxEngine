@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/BaseTypes.h"
 
-struct FArena {
+struct ENGINE_API FArena {
   char* data{nullptr};
   uint64 used{0};
   uint64 capacity{0};

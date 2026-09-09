@@ -1,6 +1,7 @@
 #include "GameFramework/Input.h"
 #include "Platform/Platform.h"
-#include "Runtime/Engine.h"
+#include "Platform/Event.h"
+#include "Core/Memory.h"
 
 #define GENERATE_FKEY_LIST(Key) FKey{#Key, Key},
 
@@ -21,18 +22,15 @@ FKey FInput::GetKeyByCode(EKeyCode KeyCode) {
 }
 
 bool FInput::IsKeyPressed(EKeyCode KeyCode) {
-  FInputContext& ctx = GEngine.GetInputContext();
-  return (ctx.currentState.keys[KeyCode] && !ctx.previousState.keys[KeyCode]);
+  return (CurrentState.keys[KeyCode] && !PreviousState.keys[KeyCode]);
 }
 
 bool FInput::IsKeyReleased(EKeyCode KeyCode) {
-  FInputContext& ctx = GEngine.GetInputContext();
-  return (!ctx.currentState.keys[KeyCode] && ctx.previousState.keys[KeyCode]);
+  return (!CurrentState.keys[KeyCode] && PreviousState.keys[KeyCode]);
 }
 
 bool FInput::IsKeyRepeat(EKeyCode KeyCode) {
-  FInputContext& ctx = GEngine.GetInputContext();
-  return (ctx.currentState.keys[KeyCode] && ctx.previousState.keys[KeyCode]);
+  return (CurrentState.keys[KeyCode] && PreviousState.keys[KeyCode]);
 }
 
 bool FInput::IsMouseCaptured() {
@@ -48,13 +46,51 @@ void FInput::ToggleCaptureMouse() {
 }
 
 FVector2 FInput::GetMousePos() {
-  return GEngine.GetInputContext().currentState.mousePos;
+  return CurrentState.mousePos;
 }
 
 FVector2 FInput::GetMouseDelta() {
-  return GEngine.GetInputContext().currentState.mouseDelta;
+  return CurrentState.mouseDelta;
 }
 
 FVector2 FInput::GetMouseScroll() {
-  return GEngine.GetInputContext().currentState.mouseScroll;
+  return CurrentState.mouseScroll;
+}
+
+void FInput::Update() {
+  FMemory::CopyAssign(&PreviousState, &CurrentState, 1);
+  CurrentState.mouseDelta = FVector2{};
+  CurrentState.mouseScroll = FVector2{};
+}
+
+bool FInput::ProcessEvent(const PEvent& InputEvent) {
+  switch(InputEvent.type) {
+    case PEventType::InputMap: {
+      break;
+    }
+    case PEventType::InputKey: {
+      CurrentState.keys[InputEvent.inputKey.keyCode] = InputEvent.inputKey.bState;
+      break;
+    }
+    case PEventType::MouseScroll: {
+      float scrollX = InputEvent.mouseScroll.scrollX;
+      float scrollY = InputEvent.mouseScroll.scrollY;
+      CurrentState.mouseDelta = FVector2{scrollX, scrollY};
+      break;
+    }
+    case PEventType::MouseDelta: {
+      float deltaX = InputEvent.mouseDelta.deltaX;
+      float deltaY = InputEvent.mouseDelta.deltaY;
+      CurrentState.mouseDelta = FVector2{deltaX, deltaY};
+      break;
+    }
+    case PEventType::MousePos: {
+      float posX = InputEvent.mousePos.posX;
+      float posY = InputEvent.mousePos.posY;
+      CurrentState.mouseDelta = FVector2{posX, posY};
+      break;
+    }
+    default: return false;
+  }
+  return true;
 }

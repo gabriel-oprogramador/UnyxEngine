@@ -1,25 +1,5 @@
 #include "Runtime/World.h"
 #include "Runtime/Schedule.h"
-#include "Platform/Platform.h"
-#include "Math/Math.h"
-
-FVector2 FWorld::GetWindowSize() {
-  uint32 width = 0, height = 0;
-  Platform::WindowGetSize(width, height);
-  return FVector2{static_cast<float>(width), static_cast<float>(height)};
-}
-
-bool FWorld::IsFullscreen() {
-  return Platform::WindowIsFullcreen();
-}
-
-void FWorld::SetFullscreen(bool bFullscreen) {
-  Platform::WindowSetFullscreen(bFullscreen);
-}
-
-void FWorld::QuitGame() {
-  Platform::WindowClose();
-}
 
 void FWorld::Initialize() {}
 

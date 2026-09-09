@@ -1,7 +1,7 @@
 #pragma once
 #include "Math/Utils.h"
 
-struct FVector2 {
+struct ENGINE_API FVector2 {
   float x;
   float y;
 

@@ -1,10 +1,22 @@
 #include "GameFramework/Time.h"
-#include "Runtime/Engine.h"
+#include "Platform/Platform.h"
 
-float FTime::DeltaTime() {
-  return GEngine.GetTimeContext().deltaTime;
+double FTime::Time() {
+  return Platform::TimeGetNow();
 }
 
-uint32 FTime::Framerate() {
-  return GEngine.GetTimeContext().framerate;
+void FTime::Update() {
+  static double lastTime = Platform::TimeGetNow();
+  static double smoothFPS = 60.0;
+  constexpr double Alpha = 0.1;
+  const double current = Platform::TimeGetNow();
+  const double delta = current - lastTime;
+
+  lastTime = current;
+  if(delta > 0.0) {
+    const double fps = 1.0 / delta;
+    smoothFPS = Alpha * fps + (1.0 - Alpha) * smoothFPS;
+  }
+  deltaTime = delta;
+  framerate = static_cast<uint32>(smoothFPS);
 }

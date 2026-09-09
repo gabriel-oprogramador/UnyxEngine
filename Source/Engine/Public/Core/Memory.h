@@ -7,7 +7,7 @@
 #include <cstring>
 #include <type_traits>
 
-struct FMemory {
+struct ENGINE_API FMemory {
   template<typename T>
   using TClean = std::remove_cv_t<std::remove_reference_t<T>>;
 

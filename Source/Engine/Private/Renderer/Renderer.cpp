@@ -2,10 +2,7 @@
 #include "Renderer/RHI.h"
 #include "Platform/Platform.h"
 
-FRenderer::FRenderer() {
-  glVersion = Platform::GraphicInitOpenGL();
-  UE_ASSERT(glVersion != 0);
-}
+FRenderer::FRenderer() {}
 
 FRenderer::~FRenderer() {}
 

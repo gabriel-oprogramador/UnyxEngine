@@ -14,7 +14,7 @@ enum class PEventType {
   MouseScroll,   //
 };
 
-struct PEvent {
+struct ENGINE_API PEvent {
   PEventType type;
   PWindow* target;
 
@@ -50,6 +50,6 @@ struct PEvent {
 };
 
 namespace Platform {
-  bool PushEvent(const PEvent& Event);
-  bool NextEvent(PEvent& OutEvent);
+  bool ENGINE_API PushEvent(const PEvent& Event);
+  bool ENGINE_API NextEvent(PEvent& OutEvent);
 }  // namespace Platform

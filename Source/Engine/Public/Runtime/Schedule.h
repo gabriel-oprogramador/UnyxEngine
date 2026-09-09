@@ -12,7 +12,6 @@ struct FSystem {
 namespace ARC {
   template<typename T>
   struct TFunctionTraits;
-  // static void Func(UWorld&)
   template<typename R, typename Arg>
   struct TFunctionTraits<R (*)(Arg)> {
     using ReturnType = R;
@@ -37,7 +36,7 @@ namespace ARC {
   struct THasUpdate<T, std::void_t<decltype(&T::Update)>> : std::true_type {};
 }  // namespace ARC
 
-struct FSchedule {
+struct ENGINE_API FSchedule {
   enum class EStage {
     BeginPlay,  //
     EndPlay,    //

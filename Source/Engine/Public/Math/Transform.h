@@ -3,7 +3,7 @@
 #include "Math/Vector3.h"
 #include "Math/Quaternion.h"
 
-struct FTransform {
+struct ENGINE_API FTransform {
   FVector3 location;
   FVector3 scale;
   FQuat rotation;

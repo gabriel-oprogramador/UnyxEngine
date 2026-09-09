@@ -3,17 +3,14 @@
 
 struct FQuat;
 
-struct FRotator {
+struct ENGINE_API FRotator {
   float pitch;
   float yaw;
   float roll;
 
   FRotator() = default;
-
   constexpr explicit FRotator(float Value) : pitch(Value), yaw(Value), roll(Value) {}
-
   constexpr FRotator(float Pitch, float Yaw, float Roll) : pitch(Pitch), yaw(Yaw), roll(Roll) {}
-
   explicit FRotator(const FQuat& Quaternion);
 
   constexpr bool operator==(const FRotator& Other) const {

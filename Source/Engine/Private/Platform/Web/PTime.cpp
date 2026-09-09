@@ -3,8 +3,8 @@
 
 namespace Platform {
 
-  float TimeGetNow() {
-    return emscripten_get_now() / 1000.f;
+  double TimeGetNow() {
+    return emscripten_get_now() / 1000.0;
   }
 
 }  // namespace Platform

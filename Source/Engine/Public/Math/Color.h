@@ -6,6 +6,16 @@ struct FColor {
   uint8 g;
   uint8 b;
   uint8 a;
+  static FColor Make(uint8 R, uint8 G, uint8 B, uint8 A) {
+    return FColor{R, G, B, A};
+  }
+  static FColor Make(float R, float G, float B, float A) {
+    uint8 r = (uint8)FMath::Clamp(R * 255, 0, 255);
+    uint8 g = (uint8)FMath::Clamp(G * 255, 0, 255);
+    uint8 b = (uint8)FMath::Clamp(B * 255, 0, 255);
+    uint8 a = (uint8)FMath::Clamp(A * 255, 0, 255);
+    return FColor{r, g, b, a};
+  }
 };
 
 struct FColors {

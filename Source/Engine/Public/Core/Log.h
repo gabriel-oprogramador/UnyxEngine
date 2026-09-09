@@ -53,7 +53,7 @@ enum class ELogLevel : uint8 {
   Fatal,    //
 };
 
-struct FLog {
+struct ENGINE_API FLog {
   static constexpr usize BUFFER_SIZE = 2048;
   static void PrintLogInfo(ELogLevel Level, cstring FuncName, cstring Context, cstring Format, ...);
 };

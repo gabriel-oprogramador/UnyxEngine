@@ -3,7 +3,7 @@
 
 using FCodePoint = uint32;
 
-struct FUnicode {
+struct ENGINE_API FUnicode {
   struct FResult {
     void* data;
     uint64 size;

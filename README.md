@@ -4,8 +4,8 @@
 ## © 2026 Unyx Engine™. All rights reserved.
 
 ## 🚧 In Development
-![Windows](https://img.shields.io/badge/Windows-red)
-![Linux](https://img.shields.io/badge/Linux-green)
+![Windows](https://img.shields.io/badge/Windows-green)
+![Linux](https://img.shields.io/badge/Linux-red)
 ![Web](https://img.shields.io/badge/Web-green)
 
 # Unyx Engine

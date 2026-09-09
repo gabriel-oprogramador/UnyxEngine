@@ -1,7 +1,7 @@
 #pragma once
 #include "Core/BaseTypes.h"
 
-struct FName {
+struct ENGINE_API FName {
   FName() : runtimeID(0) {}
   FName(cstring Str) : runtimeID(FromStr(Str).runtimeID) {}
 
@@ -28,6 +28,4 @@ private:
   friend class FNamePool;
   explicit FName(uint32 ID) : runtimeID(ID) {}
   uint32 runtimeID{0};
-
-  static bool Initialize();
 };

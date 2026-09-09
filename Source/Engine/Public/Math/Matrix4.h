@@ -18,9 +18,9 @@ struct FQuat;
 // [rx][ry][rz][rd];
 // [ux][uy][uy][ud];
 // [fx][fy][fz][fd];
-// [0][0][0][1];
+// [00][00][00][01];
 
-struct FMatrix4 {
+struct ENGINE_API FMatrix4 {
   float e[4][4];
 
   static FMatrix4 MakeIdentity();

@@ -82,6 +82,10 @@ struct TArray {
     return capacity;
   }
 
+  bool Empty() {
+    return count <= 0;
+  }
+
   void Clear() {
     FMemory::Destroy(data, count);
     count = 0;

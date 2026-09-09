@@ -140,11 +140,6 @@ uint64 FName::Hash() const {
   return GetNamePool().Hash(this->runtimeID);
 }
 
-bool FName::Initialize() {
-  static bool initialized = []() { return true; }();
-  return initialized;
-}
-
 void FName::TestUnicode() {
   const char* A = "\xC3\xA9";   // é NFC
   const char* B = "e\xCC\x81";  // e + combining acute

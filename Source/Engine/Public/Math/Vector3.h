@@ -1,10 +1,18 @@
 #pragma once
 #include "Math/Utils.h"
+#include "Core/Reflection.h"
 
-struct FVector3 {
+DECLARE_STRUCT(FVector3)
+struct ENGINE_API FVector3 {
   float x;
   float y;
   float z;
+
+  REFLECT(Type) {
+    Type.Property<&FVector3::x>("X");
+    Type.Property<&FVector3::y>("Y");
+    Type.Property<&FVector3::z>("Z");
+  }
 
   FVector3() = default;
   constexpr explicit FVector3(float Value) : x(Value), y(Value), z(Value) {}
