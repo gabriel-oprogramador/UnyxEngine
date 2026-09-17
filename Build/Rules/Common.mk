@@ -17,11 +17,13 @@ ifeq ($(OS), Windows_NT)
 PLATFORM ?= Windows
 NODE = $(firstword $(wildcard $(EMSDK_DIR)/node/*/node.exe))
 USER_DATA_DIR := $(subst \,/,$(LOCALAPPDATA))
+INIT_EDITOR    = cmd.exe /C "start "" Binaries\$(PLATFORM)\$(BUILD_TYPE)\Editor.exe --game $(GAME)" # Use \B
 else ifeq ($(UNAME), linux)
 PLATFORM ?= Linux
 NODE = $(firstword $(wildcard $(EMSDK_DIR)/node/*/bin/node))
 USER_DATA_DIR := $(if $(XDG_DATA_HOME),$(XDG_DATA_HOME),$(HOME)/.local/share)
-else 
+INIT_EDITOR    = nohup ./Binaries/$(PLATFORM)/$(BUILD_TYPE)/Editor --game $(GAME) &
+else
 $(error Host not supported)
 endif
 

@@ -6,7 +6,10 @@ void FSetupSystem::BeginPlay(FWorld& World) {
 }
 
 void FSetupSystem::Update(FWorld& World) {
-  float time = FTime::Time();
+  static FTime& Time = FGame::GetTime();
+  static FInput& Input = FGame::GetInput();
+
+  float time = Time.Time();
   float speed = 0.5f;
   float angle = time * speed;
   float r = (sinf(angle) + 1.0f) / 2.0f;
@@ -14,15 +17,15 @@ void FSetupSystem::Update(FWorld& World) {
   float b = (sinf(angle + 4.188f) + 1.0f) / 2.0f;
   RHI::ClearColor(FColor::Make(r, g, b, 1.f));
 
-  if(FInput::IsKeyPressed(EKeyCode::KEY_ESCAPE)) {
+  if(Input.IsKeyPressed(EKeyCode::KEY_ESCAPE)) {
     FGame::QuitGame();
   }
 
-  if(FInput::IsKeyPressed(EKeyCode::KEY_F)) {
+  if(Input.IsKeyPressed(EKeyCode::KEY_F)) {
     FGame::ToggleFullscreen();
   }
 
-  if(FInput::IsKeyPressed(EKeyCode::KEY_P)) {
-    FInput::ToggleCaptureMouse();
+  if(Input.IsKeyPressed(EKeyCode::KEY_P)) {
+    Input.ToggleCaptureMouse();
   }
 }

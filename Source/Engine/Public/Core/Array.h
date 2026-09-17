@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/BaseTypes.h"
+#include "Core/Core.h"
 #include "Core/Memory.h"
 
 #include <utility>
@@ -82,8 +82,8 @@ struct TArray {
     return capacity;
   }
 
-  bool Empty() {
-    return count <= 0;
+  bool Empty() const {
+    return count == 0;
   }
 
   void Clear() {
@@ -101,6 +101,16 @@ struct TArray {
     FMemory::Free(data);
     data = newData;
     capacity = NewCapacity;
+  }
+
+  void Resize(uint32 NewCount) {
+    if(NewCount > count) {
+      Reserve(NewCount);
+      FMemory::DefaultConstruct(data + count, NewCount - count);
+    } else if(NewCount < count) {
+      FMemory::Destroy(data + NewCount, count - NewCount);
+    }
+    count = NewCount;
   }
 
   T& Get(uint32 Index) {

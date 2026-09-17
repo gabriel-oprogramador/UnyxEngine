@@ -42,6 +42,9 @@ start:
 	$(MAKE) -f Build/Rules/$(PLATFORM).mk    postbuild
 	$(MAKE) -f Build/Rules/Makefile generate_cc_json
 
+editor:
+	$(INIT_EDITOR)
+
 clear:
 	echo "Cleaning Intermediate/Build/$(PLATFORM)/Development/$(TARGET)"
 	rm -rf Intermediate/Build/$(PLATFORM)/Development/$(TARGET)

@@ -1,7 +1,7 @@
 #pragma once
-#include "BaseTypes.h"
-#include "Handle.h"
-#include "Array.h"
+#include "Core/Core.h"
+#include "Core/Handle.h"
+#include "Core/Array.h"
 
 template<typename T>
 struct THandleList {

@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/BaseTypes.h"
+#include "Core/Core.h"
 #include "Core/Log.h"
 
 #include <new>
@@ -13,6 +13,29 @@ struct ENGINE_API FMemory {
 
   static void* Alloc(uint64 Size, uint64 Align = alignof(std::max_align_t));
   static void Free(void* Data);
+
+  static uint64 AlignUp(uint64 Value, uint64 Alignment) {
+    UE_ASSERT(Alignment > 0);
+    UE_ASSERT((Alignment & (Alignment - 1)) == 0);
+    return (Value + Alignment - 1) & ~(Alignment - 1);
+  }
+
+  static bool IsPowerOfTwo(uint64 Value) {
+    return Value != 0 && (Value & (Value - 1)) == 0;
+  }
+
+  static uint64 NextPowerOfTwo(uint64 Value) {
+    UE_ASSERT(Value > 0);
+    UE_ASSERT(Value <= (uint64(1) << 63));
+    --Value;
+    Value |= Value >> 1;
+    Value |= Value >> 2;
+    Value |= Value >> 4;
+    Value |= Value >> 8;
+    Value |= Value >> 16;
+    Value |= Value >> 32;
+    return Value + 1;
+  }
 
   static void* CopyBytes(void* Destination, const void* Source, uint64 Size) {
     UE_ASSERT(Destination);
@@ -32,6 +55,12 @@ struct ENGINE_API FMemory {
     UE_ASSERT(Destination);
     UE_ASSERT(Size > 0);
     return std::memset(Destination, Value, Size);
+  }
+
+  static int32 Compare(const void* Left, const void* Right, uint64 Size) {
+    UE_ASSERT(Left);
+    UE_ASSERT(Right);
+    return std::memcmp(Left, Right, Size);
   }
 
   template<typename T, typename... TArgs>

@@ -1,8 +1,10 @@
 #pragma once
-#include "Core/BaseTypes.h"
+#include "Core/Core.h"
 #include "Core/Log.h"
 
 #include <cstdarg>
+
+struct PLibrary;
 
 typedef struct PKey {
   EKeyCode keyCode;

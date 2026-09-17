@@ -17,25 +17,29 @@ struct FInputState {
 };
 
 struct ENGINE_API FInput {
-  static FKey GetKeyByName(FName Name);
-  static FKey GetKeyByCode(EKeyCode KeyCode);
-  static bool IsKeyPressed(EKeyCode KeyCode);
-  static bool IsKeyReleased(EKeyCode KeyCode);
-  static bool IsKeyRepeat(EKeyCode KeyCode);
-  static bool IsMouseCaptured();
-  static void CaptureMouse(bool bCapture);
-  static void ToggleCaptureMouse();
-  static FVector2 GetMousePos();
-  static FVector2 GetMouseDelta();
-  static FVector2 GetMouseScroll();
+  FInput() = default;
+  FInput(const FInput&) = delete;
+  FInput& operator=(const FInput&) = delete;
+  FInput(FInput&&) = delete;
+  FInput& operator=(FInput&&) = delete;
+
+  FKey GetKeyByName(FName Name);
+  FKey GetKeyByCode(EKeyCode KeyCode);
+  bool IsKeyPressed(EKeyCode KeyCode);
+  bool IsKeyReleased(EKeyCode KeyCode);
+  bool IsKeyRepeat(EKeyCode KeyCode);
+  bool IsMouseCaptured();
+  void CaptureMouse(bool bCapture);
+  void ToggleCaptureMouse();
+  FVector2 GetMousePos();
+  FVector2 GetMouseDelta();
+  FVector2 GetMouseScroll();
 
 private:
   friend struct FApp;
-  static inline FInputState CurrentState;
-  static inline FInputState PreviousState;
+  FInputState currentState;
+  FInputState previousState;
 
-  FInput() = delete;
-  ~FInput() = delete;
-  static void Update();
-  static bool ProcessEvent(const PEvent& InputEvent);
+  void Update();
+  bool ProcessEvent(const PEvent& InputEvent);
 };

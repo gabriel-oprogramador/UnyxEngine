@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/BaseTypes.h"
+#include "Core/Core.h"
 #include <csignal>
 
 #define NO_EXPAND(A)                   #A

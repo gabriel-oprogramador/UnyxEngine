@@ -11,6 +11,8 @@ struct FApi {
     CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
     GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
     consoleDefaultAttribute = consoleInfo.wAttributes;
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
   }
 };
 

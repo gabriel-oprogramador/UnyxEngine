@@ -14,6 +14,7 @@ struct FSpringArm {
   FVector3 target{};
   FVector3 offset{};
   FCenter center{};
+
   REFLECT(Type) {
     Type.Property<&FSpringArm::target>("Target");
     Type.Property<&FSpringArm::offset>("Offset");

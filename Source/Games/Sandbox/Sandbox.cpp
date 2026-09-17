@@ -58,11 +58,35 @@ struct FExampleSystem {
   }
 };
 
+struct FTestMap {
+  static void BeginPlay(FWorld& World) {
+    TMap<FName, FString> players = {
+        {FName{"PlayerOne"}, "Gabriel"},  //
+        {FName{"PlayerTwo"}, "Raphael"}   //
+    };
+    UE_INFO("Player: %u/%u", players.Count(), players.Capacity());
+    UE_INFO("PlayerOne: %s", players.Find(FName{"PlayerOne"})->ToStr());
+    UE_INFO("PlayerTwo: %s", players.Find(FName{"PlayerTwo"})->ToStr());
+
+    players.Add(FName{"PlayerThree"}, "Kauan");
+    players.Add(FName{"PlayerFour"}, "Miguel");
+    players.Add(FName{"PlayerFive"}, "Mateus");
+
+    UE_INFO("Player: %u/%u", players.Count(), players.Capacity());
+    UE_INFO("PlayerOne: %s", players.Find(FName{"PlayerOne"})->ToStr());
+    UE_INFO("PlayerTwo: %s", players.Find(FName{"PlayerTwo"})->ToStr());
+    UE_INFO("PlayerThree: %s", players.Find(FName{"PlayerThree"})->ToStr());
+    UE_INFO("PlayerFour: %s", players.Find(FName{"PlayerFour"})->ToStr());
+    UE_INFO("PlayerFive: %s", players.Find(FName{"PlayerFive"})->ToStr());
+  }
+};
+
 GAME_API void OnGameLoad(FModule& Module) {
   Module.AddSystem<FSetupSystem>();
   Module.AddSystem<FExampleSystem>();
   Module.AddComponent<UPlayerState>();
   Module.AddComponent<UCamera>();
+  Module.AddSystem<FTestMap>();
 }
 
 GAME_API void OnGameUnload() {}

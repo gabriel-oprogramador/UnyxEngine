@@ -1,115 +1,91 @@
 #include "Core/Name.h"
-#include "Core/Unicode.h"
+#include "Core/Map.h"
 #include "Core/Arena.h"
-#include "Core/Log.h"
-#include <cstring>
-
-static constexpr uint32 MAX_NAMES_ENTRIES = 8192;
-static constexpr uint32 HASH_SIZE = 4096;
-static constexpr uint32 INVALID = UINT32_MAX;
+#include "Core/Unicode.h"
+#include "Core/StringView.h"
+#include <algorithm>
 
 struct FNameEntry {
+  cstring str;
   uint64 hash;
-  uint32 offset;
+  uint32 size;
   uint32 length;
 };
 
-struct FHashNode {
-  uint32 next;
-};
-
 struct FNamePool {
-  FNameEntry entries[MAX_NAMES_ENTRIES];
-  FHashNode nodes[MAX_NAMES_ENTRIES];
-  uint32 buckets[HASH_SIZE];
-  FArena strings;
-  uint32 count = 0;
-
+  static constexpr uint64 DefaultArenaSize = 256 * 1024;
+  TMap<FStringView, uint32> table;
+  TArray<FNameEntry> entries;
+  TArray<FArena> arenas;
+  uint32 count{0};
   FNamePool() {
-    for(uint32 i = 0; i < HASH_SIZE; ++i) {
-      buckets[i] = INVALID;
-    }
-    if(!strings.Resize(256 * 1024)) {
-      return;
-    }
-    count = 0;
-    FindOrAdd("NoName", 7);
+    table.Reserve(4096);
+    entries.Reserve(4096);
+    arenas.Emplace(DefaultArenaSize);
+    FStringView key = AddString(FStringView("NoName"));
+    entries.Add(FNameEntry{key.Data(), key.Hash(), key.Size(), key.Length()});
+    table.Add(key, count);
+    ++count;
   }
 
-  cstring GetString(uint32 Id) {
-    if(Id >= count) {
+  FStringView AddString(const FStringView& View) {
+    uint32 size = View.Size();
+    for(auto& arena : arenas) {
+      char* data = arena.Push<char>(size + 1);
+      if(data) {
+        FMemory::CopyBytes(data, View.Data(), size);
+        data[size] = '\0';
+        return FStringView(data, size, View.Length());
+      }
+    }
+    uint64 capacity = std::max(DefaultArenaSize, FMemory::NextPowerOfTwo(size + 1));
+    FArena& arena = arenas.Emplace(capacity);
+    char* data = arena.Push<char>(size + 1);
+    UE_ASSERT(data);
+    FMemory::CopyBytes(data, View.Data(), size);
+    data[size] = '\0';
+    return FStringView(data, size, View.Length());
+  }
+
+  FName AddOrCreate(const FStringView& String) {
+    FStringView view = String;
+    FUnicode::FResult result{};
+    FUnicode::NormalizeNFC(String.Data(), String.Size(), result);
+    if(result.transformed) {
+      view = FStringView(static_cast<char*>(result.data));
+    }
+
+    uint32* value = table.Find(view);
+    if(value) {
+      FUnicode::Free(result);
+      return FName{*value};
+    }
+
+    uint32 id = count;
+    FStringView key = AddString(view);
+    FUnicode::Free(result);
+
+    entries.Add(FNameEntry{key.Data(), key.Hash(), key.Size(), key.Length()});
+    table.Add(key, id);
+    ++count;
+
+    return FName{id};
+  }
+
+  cstring GetStr(const FName& Name) const {
+    uint32 id = Name.id;
+    if(id >= count) {
       return "NoName";
     }
-    return strings.Get<const char>(entries[Id].offset);
+    return entries[id].str;
   }
-  uint64 Hash(uint32 Id) const {
-    if(Id >= count) {
+
+  uint64 GetHash(const FName& Name) const {
+    uint32 id = Name.id;
+    if(id >= count) {
       return 0;
     }
-    return entries[Id].hash;
-  }
-
-  uint32 Length(uint32 Id) const {
-    if(Id >= count) {
-      return 0;
-    }
-    return entries[Id].length;
-  }
-
-  constexpr uint64 MakeHash(const char* str) {
-    uint64 hash = 14695981039346656037ull;
-    while(*str) {
-      hash ^= static_cast<uint8>(*str++);
-      hash *= 1099511628211ull;
-    }
-    return hash;
-  }
-
-  FName FindOrAdd(cstring Str, uint64 Length) {
-    if(!Str || Str[0] == '\0') {
-      return FName((uint32)0);
-    }
-
-    uint64 hash = MakeHash(Str);
-    uint32 length = Length;
-    uint32 bucket = hash % HASH_SIZE;
-    uint32 node = buckets[bucket];
-
-    while(node != INVALID) {
-      FNameEntry& entry = entries[node];
-      if(entry.hash == hash && entry.length == length) {
-        cstring name = strings.Get<char>(entry.offset);
-        if(std::memcmp(name, Str, length) == 0) {
-          return FName(node);
-        }
-      }
-      node = nodes[node].next;
-    }
-
-    UE_CHECK(count < MAX_NAMES_ENTRIES);
-    if(count >= MAX_NAMES_ENTRIES) {
-      return FName((uint32)0);
-    }
-    uint32 id = count++;
-    uint32 offset = strings.used;
-    char* dst = static_cast<char*>(strings.PushSize(length + 1, alignof(char)));
-    UE_CHECK(dst);
-    if(!dst) {
-      count--;
-      return FName((uint32)0);
-    }
-
-    std::memcpy(dst, Str, length);
-    dst[length] = '\0';
-
-    entries[id].hash = hash;
-    entries[id].offset = offset;
-    entries[id].length = length;
-
-    nodes[id].next = buckets[bucket];
-    buckets[bucket] = id;
-
-    return FName(id);
+    return entries[id].hash;
   }
 };
 
@@ -119,35 +95,13 @@ static FNamePool& GetNamePool() {
 }
 
 FName FName::FromStr(cstring Str) {
-  uint64 length = FUnicode::ByteLength(Str);
-  if(FUnicode::IsASCII(Str, length)) {
-    return GetNamePool().FindOrAdd(Str, length);
-  }
-  FUnicode::FResult result{};
-  if(!FUnicode::NormalizeNFC(Str, length, result)) {
-    return FName();
-  }
-  FName name = GetNamePool().FindOrAdd((cstring)result.data, result.size);
-  FUnicode::Free(result);
-  return name;
+  return GetNamePool().AddOrCreate(FStringView(Str));
 }
 
 cstring FName::ToStr() const {
-  return GetNamePool().GetString(this->runtimeID);
+  return GetNamePool().GetStr(*this);
 }
 
 uint64 FName::Hash() const {
-  return GetNamePool().Hash(this->runtimeID);
-}
-
-void FName::TestUnicode() {
-  const char* A = "\xC3\xA9";   // é NFC
-  const char* B = "e\xCC\x81";  // e + combining acute
-  FName NameA = FName::FromStr(A);
-  FName NameB = FName::FromStr(B);
-  UE_ALERT("A: %s ID:%u", NameA.ToStr(), NameA.GetID());
-  UE_ALERT("B: %s ID:%u", NameB.ToStr(), NameB.GetID());
-  UE_ASSERT(NameA == NameB);
-  UE_ASSERT(std::strcmp(NameA.ToStr(), "\xC3\xA9") == 0);
-  UE_ASSERT(NameA.Hash() == NameB.Hash());
+  return GetNamePool().GetHash(*this);
 }

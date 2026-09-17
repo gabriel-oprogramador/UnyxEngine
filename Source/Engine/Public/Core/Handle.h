@@ -1,5 +1,5 @@
 #pragma once
-#include "BaseTypes.h"
+#include "Core/Core.h"
 
 template<typename T>
 struct THandleList;

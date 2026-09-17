@@ -2,19 +2,25 @@
 #include "Core/Core.h"
 
 struct ENGINE_API FTime {
-  static double Time();
+  FTime() = default;
+  FTime(const FTime&) = delete;
+  FTime(FTime&&) = delete;
+  FTime& operator=(const FTime&) = delete;
+  FTime& operator=(FTime&&) = delete;
 
-  static float DeltaTime() {
+  double Time();
+
+  float DeltaTime() {
     return deltaTime;
   }
-  static uint32 Framerate() {
+  uint32 Framerate() {
     return framerate;
   }
 
 private:
   friend struct FApp;
-  static inline float deltaTime = {0.f};
-  static inline uint32 framerate = 60;
+  float deltaTime = {0.f};
+  uint32 framerate = 60;
 
-  static void Update();
+  void Update();
 };

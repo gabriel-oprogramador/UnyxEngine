@@ -1,6 +1,6 @@
 #pragma once
 #include "Core/Core.h"
-
+#include "Core/Array.h"
 #include <type_traits>
 
 struct FWorld;

@@ -1,8 +1,13 @@
 #include "Core/Arena.h"
-#include "Core/Log.h"
+#include "Core/Memory.h"
 
-#include <cstring>
-#include <new>
+FArena::~FArena() {
+  Release();
+}
+
+FArena::FArena(uint64 Capacity) {
+  Reserve(Capacity);
+}
 
 FArena::FArena(FArena&& Other) noexcept : data(Other.data), used(Other.used), capacity(Other.capacity) {
   Other.data = nullptr;
@@ -14,54 +19,52 @@ FArena& FArena::operator=(FArena&& Other) noexcept {
   if(this == &Other) {
     return *this;
   }
-
-  delete[] data;
-
+  Release();
   data = Other.data;
   used = Other.used;
   capacity = Other.capacity;
-
   Other.data = nullptr;
   Other.used = 0;
   Other.capacity = 0;
-
   return *this;
 }
 
-FArena::~FArena() {
-  used = 0;
-  capacity = 0;
-  delete[] data;
-}
-
-bool FArena::Resize(uint64 NewCapacity) {
-  UE_ASSERT(NewCapacity > capacity);
-  char* newData = new(std::nothrow) char[NewCapacity];
-  if(!newData) {
+bool FArena::Reserve(uint64 Capacity) {
+  UE_ASSERT(data == nullptr);
+  UE_ASSERT(Capacity != 0);
+  if(data || Capacity == 0) {
     return false;
   }
-  if(data && used > 0) {
-    std::memcpy(newData, data, used);
-    delete[] data;
-  }
-  data = newData;
-  capacity = NewCapacity;
+  data = static_cast<uint8*>(FMemory::Alloc(Capacity, alignof(std::max_align_t)));
+  UE_CHECK(data);
+  capacity = Capacity;
+  used = 0;
   return true;
 }
 
-void* FArena::PushSize(uint64 Size, uint64 Align) {
-  UE_ASSERT(Size > 0);
-  UE_ASSERT(Align > 0);
-  UE_ASSERT((Align & (Align - 1)) == 0);
-
-  uint64 aligned = (used + Align - 1) & ~(Align - 1);
-
-  if(aligned > capacity || Size > capacity - aligned) {
+void* FArena::PushSize(uint64 Size, uint64 Alignment) {
+  uint64 address = reinterpret_cast<uint64>(data) + used;
+  uint64 aligned = FMemory::AlignUp(address, Alignment);
+  uint64 padding = aligned - address;
+  if(padding > (capacity - used)) {
     return nullptr;
   }
-
-  void* ptr = data + aligned;
-  used = aligned + Size;
-
+  uint64 offset = used + padding;
+  if(Size > (capacity - offset)) {
+    return nullptr;
+  }
+  void* ptr = data + offset;
+  used = offset + Size;
   return ptr;
+}
+
+void FArena::Reset() {
+  used = 0;
+}
+
+void FArena::Release() {
+  FMemory::Free(data);
+  data = nullptr;
+  used = 0;
+  capacity = 0;
 }

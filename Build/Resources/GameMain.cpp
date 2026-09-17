@@ -7,32 +7,34 @@ GAME_API void OnGameLoad(FModule& Module);
 GAME_API void OnGameUnload();
 
 struct FApp final {
-  FModule game = {};
-  FWorld world = {};
+  FModule& gameModule = FGame::GetModule();
+  FWorld& world = FGame::GetWorld();
+  FInput& input = FGame::GetInput();
+  FTime& time = FGame::GetTime();
 
   void Initialize() {
     Platform::WindowInitOpenGL();
     Platform::WindowInit(800, 450, TARGET_NAME);
-    OnGameLoad(game);
-    game.RegisterModule(FName{"Game"});
+    OnGameLoad(gameModule);
+    gameModule.RegisterModule(FName{"Game"});
     world.Initialize();
-    world.BeginPlay(game.schedule);
+    world.BeginPlay(gameModule.schedule);
   }
 
   void Terminate() {
-    world.EndPlay(game.schedule);
+    world.EndPlay(gameModule.schedule);
     world.Terminate();
     OnGameUnload();
     Platform::WindowTerm();
   }
 
   void Update() {
-    FTime::Update();
-    FInput::Update();
+    time.Update();
+    input.Update();
     RHI::Clear();
     Platform::WindowPollEvent();
     ProcessEvents();
-    world.Update(game.schedule);
+    world.Update(gameModule.schedule);
     Platform::WindowSwapBuffers();
   }
 
@@ -45,7 +47,7 @@ struct FApp final {
         case PEventType::MousePos:
         case PEventType::MouseDelta:
         case PEventType::MouseScroll: {
-          FInput::ProcessEvent(event);
+          input.ProcessEvent(event);
           break;
         }
         case PEventType::WindowResize: {
@@ -54,7 +56,9 @@ struct FApp final {
           RHI::SetViewport(FViewport{0, 0, width, height});
           break;
         }
-        default: return;
+        default: {
+          break;
+        }
       }
     }
   }

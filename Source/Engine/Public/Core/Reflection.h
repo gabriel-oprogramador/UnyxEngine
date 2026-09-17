@@ -154,7 +154,7 @@ struct FTypeBuilder {
     using TAccessor = TFieldAccessor<TMember>;
     currentProp = owner.props.Count();
     FProperty prop{};
-    prop.name = Name;
+    prop.name = FName{Name};
     prop.GetPtr = &TAccessor::GetPtr;
     prop.Get = &TAccessor::Get;
     prop.Set = &TAccessor::Set;

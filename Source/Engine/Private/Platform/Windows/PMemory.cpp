@@ -6,7 +6,7 @@
 namespace Platform {
 
   void* MemAlloc(uint64 Size, uint64 Align) {
-    if(Size == 0) {
+    if(Size == 0 || Align == 0) {
       return nullptr;
     }
     return _aligned_malloc(Size, Align);

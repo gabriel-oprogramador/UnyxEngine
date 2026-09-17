@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/BaseTypes.h"
+#include "Core/Core.h"
 #include "Platform.h"
 
 struct PWindow;

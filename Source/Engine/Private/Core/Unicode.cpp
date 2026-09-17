@@ -1,6 +1,7 @@
 #include "Core/Unicode.h"
 #include "Mojibake/mojibake.h"
-#include <cstring>
+
+#include "Core/Log.h"
 
 static bool InternalNormalize(cstring Str, uint64 Length, mjb_normalization Normalization, FUnicode::FResult& Out) {
   if(!Str) {
@@ -122,7 +123,7 @@ bool FUnicode::NFKCCaseFold(cstring Str, uint64 Length, FResult& Out) {
 }
 
 void FUnicode::Free(FResult& Result) {
-  if(Result.data) {
+  if(Result.data && Result.transformed) {
     mjb_result result{};
     result.output = static_cast<char*>(Result.data);
     result.output_size = Result.size;

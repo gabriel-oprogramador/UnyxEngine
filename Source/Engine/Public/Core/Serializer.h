@@ -1,16 +1,21 @@
 #pragma once
-#include "Core/BaseTypes.h"
-#include <cstdio>
-#include <cstdarg>
+#include "Core/Core.h"
 
+struct FWorld;
+
+// TODO: Refatorar tudo isso pra usar Platform Layer
 struct FArchive {
-  FILE* file{nullptr};
-  bool bReadOnly{false};
+  FWorld& world;
 
-  FArchive() = default;
+  FArchive(FWorld& WorldContext) : world(WorldContext) {}
+
   ~FArchive() {
     Close();
   }
+
+  //TODO Remove it
+  FILE* file{nullptr};
+  bool bReadOnly{false};
 
   void Close() {
     if(file) {
