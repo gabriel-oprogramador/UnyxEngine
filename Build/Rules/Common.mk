@@ -22,7 +22,7 @@ else ifeq ($(UNAME), linux)
 PLATFORM ?= Linux
 NODE = $(firstword $(wildcard $(EMSDK_DIR)/node/*/bin/node))
 USER_DATA_DIR := $(if $(XDG_DATA_HOME),$(XDG_DATA_HOME),$(HOME)/.local/share)
-INIT_EDITOR    = nohup ./Binaries/$(PLATFORM)/$(BUILD_TYPE)/Editor --game $(GAME) &
+INIT_EDITOR    = nohup ./Binaries/$(PLATFORM)/$(BUILD_TYPE)/Editor --game $(GAME) > /dev/null 2>&1 &
 else
 $(error Host not supported)
 endif

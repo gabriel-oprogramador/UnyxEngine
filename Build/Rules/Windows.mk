@@ -18,7 +18,7 @@ LD := $(ZIG_DIR)/zig.exe c++
 AR := $(ZIG_DIR)/zig.exe ar
 RC := $(ZIG_DIR)/zig.exe rc
 
-EXEC_OUTPUT_NAME   = $(TARGET_NAME).exe
+EXEC_OUTPUT_NAME  = $(TARGET_NAME).exe
 STATIC_LIB_NAME   = lib$(TARGET_NAME).a
 SHARED_LIB_NAME   = $(TARGET_NAME)-Module.dll
 

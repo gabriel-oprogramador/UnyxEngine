@@ -3,10 +3,10 @@
 
 namespace Platform {
 
-  float TimeGetNow() {
+  double TimeGetNow() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    return (float)ts.tv_sec + (float)ts.tv_nsec * 1e-9;
+    return (double)ts.tv_sec + (double)ts.tv_nsec * 1e-9;
   }
 
 }  // namespace Platform

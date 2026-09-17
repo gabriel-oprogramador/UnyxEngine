@@ -75,7 +75,7 @@ struct FNamePool {
   cstring GetStr(const FName& Name) const {
     uint32 id = Name.id;
     if(id >= count) {
-      return "NoName";
+      return entries[0].str;
     }
     return entries[id].str;
   }

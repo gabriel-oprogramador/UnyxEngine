@@ -104,116 +104,6 @@ static FApi& GetApi() {
   return api;
 }
 
-int main(int argc, const char** argv) {
-  UE_INFO("Unyx Engine for Linux");
-
-  AppBootstrapInitialize();
-
-  Display* dpy = GetApi().display;
-  GLXContext ctx = GetApi().context;
-  PWindow& pWin = GetApi().mainWindow;
-  while(!pWin.bShouldClose) {
-    InternalWinProc();
-    AppBootstrapUpdate();
-    glXSwapBuffers(dpy, pWin.win);
-  }
-
-  AppBootstrapTerminate();
-
-  return 0;
-}
-
-static void InternalWinProc() {
-  FApi& api = GetApi();
-  Display* dpy = api.display;
-  PWindow& pWindow = api.mainWindow;
-  uint32 eventCount = 0;
-  XEvent event{};
-  while(XPending(dpy)) {
-    XNextEvent(dpy, &event);
-    eventCount++;
-
-    if(event.type == api.xkbEventCode) {
-      XkbEvent* xkbEvent = (XkbEvent*)&event;
-      if(xkbEvent->any.xkb_type == XkbStateNotify) {
-        ApiXInput2UpdateKeyMap();
-        continue;
-      }
-    }
-
-    if(pWindow.bFocused && event.xcookie.type == GenericEvent && event.xcookie.extension == GetApi().xiOpcode) {
-      ApiXInput2PollRawEvent(&event);
-      continue;
-    }
-
-    switch(event.type) {
-      case ClientMessage: {
-        if((Atom)event.xclient.data.l[0] == pWindow.wmDelete) {
-          pWindow.bShouldClose = true;
-        }
-        break;
-      }
-      case FocusIn: {
-        Window focused;
-        int32 revertTO;
-        XGetInputFocus(dpy, &focused, &revertTO);
-        if(pWindow.win == focused && pWindow.bFocused != true) {
-          pWindow.bFocused = true;
-          InternalCaptureMouse(pWindow.bMouseCaptured);
-          PEvent pEvent = {PEventType::WindowFocus, &pWindow};
-          pEvent.windowFocus.bFocused = true;
-          Platform::PushEvent(pEvent);
-        }
-        break;
-      }
-      case FocusOut: {
-        Window focused;
-        int32 revertTO;
-        XGetInputFocus(dpy, &focused, &revertTO);
-        if(pWindow.win != focused && pWindow.bFocused != false) {
-          pWindow.bFocused = false;
-          InternalCaptureMouse(false);
-          PEvent pEvent = {PEventType::WindowFocus, &pWindow};
-          pEvent.windowFocus.bFocused = false;
-          Platform::PushEvent(pEvent);
-        }
-        break;
-      }
-      case KeyPress:
-      case KeyRelease:
-      case ButtonPress:
-      case ButtonRelease: {
-        ApiXInput2PollCoreEvent(&event);
-        break;
-      }
-      case MotionNotify: {
-        PEvent pEvent = {PEventType::MousePos, &pWindow};
-        pEvent.mousePos.posX = event.xmotion.x;
-        pEvent.mousePos.posY = event.xmotion.y;
-        Platform::PushEvent(pEvent);
-        break;
-      }
-      case ConfigureNotify: {
-        int32 width = event.xconfigure.width;
-        int32 height = event.xconfigure.height;
-        if(width != pWindow.width || height != pWindow.height) {
-          pWindow.width = event.xconfigure.width;
-          pWindow.height = event.xconfigure.height;
-          pWindow.bNeedResize = true;
-        }
-        break;
-      }
-    }
-  }
-  if(pWindow.bNeedResize) {
-    pWindow.bNeedResize = false;
-    PEvent pEvent{PEventType::WindowResize, &pWindow};
-    pEvent.windowResize.width = pWindow.width;
-    pEvent.windowResize.height = pWindow.height;
-    Platform::PushEvent(pEvent);
-  }
-}
-
 namespace Platform {
 
   void WindowInit(uint32 Width, uint32 Height, cstring Title) {
@@ -227,8 +117,8 @@ namespace Platform {
     int inputMask = PointerMotionMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
     int attrsMask = CWEventMask | CWColormap;
 
-    int posX = CopyFromParent;
-    int posY = CopyFromParent;
+    int posX = 100;
+    int posY = 300;
 
     XSetWindowAttributes attrs = {};
     attrs.colormap = GetApi().colormap;
@@ -238,13 +128,14 @@ namespace Platform {
     XClassHint hint{};
     hint.res_class = const_cast<char*>(Title);
     hint.res_name = const_cast<char*>(PROJECT_NAME);
-    XSetClassHint(dpy, win, &hint);
 
     Atom wmDelete = XInternAtom(dpy, "WM_DELETE_WINDOW", false);
     XSetWMProtocols(dpy, win, &wmDelete, true);
+    XSetClassHint(dpy, win, &hint);
     XStoreName(dpy, win, Title);
     XMapWindow(dpy, win);
     glXMakeContextCurrent(dpy, win, win, GetApi().context);
+    XMoveWindow(dpy, win, posX, posY);
 
     PWindow& pWindow = GetApi().mainWindow;
     pWindow.width = Width;
@@ -258,6 +149,114 @@ namespace Platform {
     pEvent.windowResize.width = pWindow.width;
     pEvent.windowResize.height = pWindow.height;
     Platform::PushEvent(pEvent);
+    WindowSetIcon("AppIcon.png");
+  }
+  void WindowTerm() {
+    Display* dpy = GetApi().display;
+    GLXContext ctx = GetApi().context;
+    Window xWin = GetApi().mainWindow.win;
+    glXMakeContextCurrent(dpy, 0, 0, 0);
+    glXDestroyContext(dpy, ctx);
+    XUnmapWindow(dpy, xWin);
+    XDestroyWindow(dpy, xWin);
+    XCloseDisplay(dpy);
+  }
+
+  void WindowPollEvent() {
+    FApi& api = GetApi();
+    Display* dpy = api.display;
+    PWindow& pWindow = api.mainWindow;
+    uint32 eventCount = 0;
+    XEvent event{};
+    while(XPending(dpy)) {
+      XNextEvent(dpy, &event);
+      eventCount++;
+
+      if(event.type == api.xkbEventCode) {
+        XkbEvent* xkbEvent = (XkbEvent*)&event;
+        if(xkbEvent->any.xkb_type == XkbStateNotify) {
+          ApiXInput2UpdateKeyMap();
+          continue;
+        }
+      }
+
+      if(pWindow.bFocused && event.xcookie.type == GenericEvent && event.xcookie.extension == GetApi().xiOpcode) {
+        ApiXInput2PollRawEvent(&event);
+        continue;
+      }
+
+      switch(event.type) {
+        case ClientMessage: {
+          if((Atom)event.xclient.data.l[0] == pWindow.wmDelete) {
+            pWindow.bShouldClose = true;
+          }
+          break;
+        }
+        case FocusIn: {
+          Window focused;
+          int32 revertTO;
+          XGetInputFocus(dpy, &focused, &revertTO);
+          if(pWindow.win == focused && pWindow.bFocused != true) {
+            pWindow.bFocused = true;
+            InternalCaptureMouse(pWindow.bMouseCaptured);
+            PEvent pEvent = {PEventType::WindowFocus, &pWindow};
+            pEvent.windowFocus.bFocused = true;
+            Platform::PushEvent(pEvent);
+          }
+          break;
+        }
+        case FocusOut: {
+          Window focused;
+          int32 revertTO;
+          XGetInputFocus(dpy, &focused, &revertTO);
+          if(pWindow.win != focused && pWindow.bFocused != false) {
+            pWindow.bFocused = false;
+            InternalCaptureMouse(false);
+            PEvent pEvent = {PEventType::WindowFocus, &pWindow};
+            pEvent.windowFocus.bFocused = false;
+            Platform::PushEvent(pEvent);
+          }
+          break;
+        }
+        case KeyPress:
+        case KeyRelease:
+        case ButtonPress:
+        case ButtonRelease: {
+          ApiXInput2PollCoreEvent(&event);
+          break;
+        }
+        case MotionNotify: {
+          PEvent pEvent = {PEventType::MousePos, &pWindow};
+          pEvent.mousePos.posX = event.xmotion.x;
+          pEvent.mousePos.posY = event.xmotion.y;
+          Platform::PushEvent(pEvent);
+          break;
+        }
+        case ConfigureNotify: {
+          int32 width = event.xconfigure.width;
+          int32 height = event.xconfigure.height;
+          if(width != pWindow.width || height != pWindow.height) {
+            pWindow.width = event.xconfigure.width;
+            pWindow.height = event.xconfigure.height;
+            pWindow.bNeedResize = true;
+          }
+          break;
+        }
+      }
+    }
+    if(pWindow.bNeedResize) {
+      pWindow.bNeedResize = false;
+      PEvent pEvent{PEventType::WindowResize, &pWindow};
+      pEvent.windowResize.width = pWindow.width;
+      pEvent.windowResize.height = pWindow.height;
+      Platform::PushEvent(pEvent);
+    }
+  }
+
+  void WindowSwapBuffers() {
+    Display* dpy = GetApi().display;
+    Window xWin = GetApi().mainWindow.win;
+    glXSwapBuffers(dpy, xWin);
   }
 
   void WindowClose() {
@@ -334,7 +333,10 @@ namespace Platform {
     int32 srcW, srcH, channels;
     uint8* src = stbi_load(Path, &srcW, &srcH, nullptr, 4);
     if(!src) {
-      return;
+      src = stbi_load("Build/Resources/AppIcon.png", &srcW, &srcH, nullptr, 4);
+      if(!src) {
+        return;
+      }
     }
 
     const int32 iconSizes[] = {16, 32, 48, 64, 128, 256};
@@ -375,7 +377,7 @@ namespace Platform {
     delete[] iconData;
   }
 
-  uint32 GraphicInitOpenGL() {
+  uint32 WindowInitOpenGL() {
     constexpr int32 Major = 3;
     constexpr int32 Minor = 3;
     Display* dpy = GetApi().display;
@@ -502,77 +504,6 @@ namespace Platform {
     GetApi().context = ctx;
     GetApi().colormap = XCreateColormap(dpy, root, bestVisual->visual, AllocNone);
     return 33;  /// OpenGL 3.3 Core Profile
-  }
-
-  void LogPrint(ELogLevel Level, cstring FuncName, cstring Context, cstring Format, va_list Args) {
-    cstring logTag = "";
-    cstring logColor = "";
-
-    char buffer[FLog::BUFFER_SIZE] = "";
-    uint64 offset = 0;
-
-    if(Format == NULL) {
-      fprintf(stderr, "Log Format invalid\n");
-      return;
-    }
-
-    switch(Level) {
-      case ELogLevel::Info: {
-        logTag = "[LOG INFO]";
-        logColor = "\e[97m";
-        break;
-      }
-
-      case ELogLevel::Alert: {
-        logTag = "[LOG ALERT]";
-        logColor = "\e[93m";
-        break;
-      }
-
-      case ELogLevel::Success: {
-        logTag = "[LOG SUCCESS]";
-        logColor = "\e[32m";
-        break;
-      }
-
-      case ELogLevel::Warning: {
-        logTag = "[LOG WARNING]";
-        logColor = "\e[33m";
-        break;
-      }
-
-      case ELogLevel::Error: {
-        logTag = "[LOG ERROR]";
-        logColor = "\e[91m";
-        break;
-      }
-
-      case ELogLevel::Fatal: {
-        logTag = "[LOG FATAL]";
-        logColor = "\e[31m";
-        break;
-      }
-    }
-
-    if(Level != ELogLevel::Info && FuncName != NULL) {
-      offset = snprintf(buffer, sizeof(buffer), "%s%s %s() => ", logColor, logTag, FuncName);
-    } else {
-      offset = snprintf(buffer, sizeof(buffer), "%s%s => ", logColor, logTag);
-    }
-
-    if(offset < sizeof(buffer)) {
-      offset += vsnprintf(buffer + offset, sizeof(buffer) - offset, Format, Args);
-    }
-
-    if(offset < sizeof(buffer)) {
-      if(Level != ELogLevel::Info && Level != ELogLevel::Alert && Context != NULL) {
-        offset += snprintf(buffer + offset, sizeof(buffer) - offset, " -> %s%s", Context, "\e[0m");
-      } else {
-        offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%s", "\e[m");
-      }
-    }
-
-    puts(buffer);
   }
 }  // namespace Platform
 
