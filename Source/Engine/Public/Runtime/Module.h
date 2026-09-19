@@ -1,9 +1,32 @@
 #pragma once
-
-#include "Runtime/Schedule.h"
+#include "Core/Name.h"
 #include "Core/Reflection.h"
+#include "Runtime/Schedule.h"
+
+struct FType;
 
 struct ENGINE_API FModule {
+  FModule(const FName& Name) : name(Name) {}
+
+  template<typename T>
+  void AddType() {
+    FType* type = TStaticType<T>::GetType();
+    switch(type->kind) {
+      case ETypeKind::Struct: {
+        types.Add(type);
+        break;
+      }
+      case ETypeKind::Component: {
+        components.Add(type);
+        break;
+      }
+      case ETypeKind::Primitive: {
+        types.Add(type);
+        break;
+      }
+    }
+  }
+
   template<typename TSystem>
   void AddSystem() {
     if constexpr(ARC::THasBeginPlay<TSystem>::value) {
@@ -29,18 +52,14 @@ struct ENGINE_API FModule {
     }
   }
 
-  template<typename TComponent>
-  void AddComponent() {
-    FType* type = TStaticType<TComponent>::GetType();
-    componentsList.Add(type);
+  FName GetName() {
+    return name;
   }
 
 private:
-  void RegisterModule(const FName& Name) {
-    FTypeOf::RegisterComponents(FName{"Game"}, componentsList);
-  }
-
   friend struct FApp;
-  TArray<FType*> componentsList{};
   FSchedule schedule{};
+  FName name{};
+  TArray<FType*> types{};
+  TArray<FType*> components{};
 };

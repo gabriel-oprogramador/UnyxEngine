@@ -7,14 +7,14 @@ struct FType;
 struct FProperty;
 struct FTypeBuilder;
 
-#define _DECLARE_TYPE(Type, Kind)                                         \
-  template<>                                                              \
-  struct TStaticType<Type> : std::true_type {                             \
-    static FType* GetType() {                                             \
-      static FType myType = FTypeOf::MakeType<Type>(#Type, Kind);         \
-      static bool bReflected = FTypeReflectHelper::Reflect<Type>(myType); \
-      return &myType;                                                     \
-    }                                                                     \
+#define _DECLARE_TYPE(Type, Kind)                                            \
+  template<>                                                                 \
+  struct TStaticType<Type> : std::true_type {                                \
+    static FType* GetType() {                                                \
+      static FType myType = FTypeReflectHelper::MakeType<Type>(#Type, Kind); \
+      static bool bReflected = FTypeReflectHelper::Reflect<Type>(myType);    \
+      return &myType;                                                        \
+    }                                                                        \
   };
 
 #define DECLARE_STRUCT(Type) \
@@ -69,57 +69,6 @@ struct FType {
     }
     return nullptr;
   }
-};
-
-struct FTypeOf {
-  template<typename T>
-  static FType MakeType(cstring TypeName, ETypeKind Kind) {
-    FType type = {};
-    type.name = FName(TypeName);
-    type.size = sizeof(T);
-    type.align = alignof(T);
-    type.kind = Kind;
-    if constexpr(TSerializer<T>::Supported) {
-      type.OnSerialize = [](FArchive& Ar, void* Obj) {  //
-        TSerializer<T>::Serialize(Ar, *static_cast<T*>(Obj));
-      };
-    }
-    if constexpr(THasReflect<T>::value) {
-      type.OnReflect = &T::Reflect;
-    }
-    return type;
-  }
-
-  static void RegisterComponents(const FName& ModuleName, TArray<FType*>& List) {
-    //AllModules.Add(FModuleEntry{ModuleName, &List});
-  }
-
-  static void UnregisterComponents(const FName& ModuleName) {
-    for(uint32 c = 0; c < AllModules.Count(); c++) {
-      auto& entry = AllModules.Get(c);
-      if(entry.name == ModuleName) {
-        AllModules.RemoveSwap(c);
-        return;
-      }
-    }
-  }
-
-  static FType* FindByName(const FName& Name) {
-    for(auto& entry : AllModules) {
-      for(auto& type : *entry.components) {
-        if(type->name == Name) {
-          return type;
-        }
-      }
-    }
-    return nullptr;
-  }
-
-  struct FModuleEntry {
-    FName name{};
-    TArray<FType*>* components{nullptr};
-  };
-  static inline TArray<FModuleEntry> AllModules{};
 };
 
 template<auto TMember>
@@ -184,6 +133,24 @@ private:
 };
 
 struct FTypeReflectHelper {
+  template<typename T>
+  static FType MakeType(cstring TypeName, ETypeKind Kind) {
+    FType type = {};
+    type.name = FName(TypeName);
+    type.size = sizeof(T);
+    type.align = alignof(T);
+    type.kind = Kind;
+    if constexpr(TSerializer<T>::Supported) {
+      type.OnSerialize = [](FArchive& Ar, void* Obj) {  //
+        TSerializer<T>::Serialize(Ar, *static_cast<T*>(Obj));
+      };
+    }
+    if constexpr(THasReflect<T>::value) {
+      type.OnReflect = &T::Reflect;
+    }
+    return type;
+  }
+
   template<typename T>
   static bool Reflect(FType& Type) {
     if(!Type.bReflected) {

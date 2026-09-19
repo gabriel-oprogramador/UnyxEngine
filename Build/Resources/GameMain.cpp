@@ -2,6 +2,7 @@
 #include <Renderer/RHI.h>
 #include <Platform/Event.h>
 #include <Platform/Platform.h>
+#include <Runtime/Module.h>
 
 GAME_API void OnGameLoad(FModule& Module);
 GAME_API void OnGameUnload();
@@ -16,7 +17,6 @@ struct FApp final {
     Platform::WindowInitOpenGL();
     Platform::WindowInit(800, 450, TARGET_NAME);
     OnGameLoad(gameModule);
-    gameModule.RegisterModule(FName{"Game"});
     world.Initialize();
     world.BeginPlay(gameModule.schedule);
   }

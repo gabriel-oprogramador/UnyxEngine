@@ -24,3 +24,4 @@
 #include <Math/Math.h>
 
 #include <Runtime/Game.h>
+#include <Runtime/Module.h>

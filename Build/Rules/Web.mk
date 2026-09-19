@@ -51,7 +51,6 @@ LIBS     += -sUSE_WEBGL2=1 -sFULL_ES3 -sWASM=1 -sASYNCIFY
 LIBS     += --preload-file Content@/Content/ -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=512mb
 LIBS     += -L$(BIN_DIR) -lUnyxEngine
 FLAGS    += -isystem Source/Engine/Public
-FLAGS    += -DUNYX_APP_IMPLEMENTATION
 FLAGS    += $(ENABLE_DEBUG_FLAGS)
 RUN_EXEC := $(NODE) $(LIVE_SERVER) $(BIN_DIR)
 LINK     := $(LINK_EXECUTABLE)
@@ -61,7 +60,6 @@ LIBS     += -sUSE_WEBGL2=1 -sFULL_ES3 -sWASM=1 -sASYNCIFY
 LIBS     += --preload-file Content@/Content/ -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=512mb
 LIBS     += -L$(BIN_DIR) -lUnyxEngine
 FLAGS    += -isystem Source/Engine/Public
-FLAGS    += -DUNYX_APP_IMPLEMENTATION
 FLAGS    += $(DISABLE_DEBUG_FLAGS)
 RUN_EXEC := $(NODE) $(LIVE_SERVER) $(BIN_DIR)
 LINK     := $(LINK_EXECUTABLE)
@@ -79,7 +77,7 @@ build: $(OBJ)
 postbuild:
 
 run:
-	echo "Running -> $(EXEC_OUTPUT)"
+	echo "Running -> $(BIN_DIR)"
 	$(RUN_EXEC)
 
 $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.c

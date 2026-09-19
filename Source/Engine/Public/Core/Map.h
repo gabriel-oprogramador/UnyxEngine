@@ -10,6 +10,12 @@ struct TPair {
   TValue value;
 };
 
+// TODO: Replace TArray entries with TChunkStorage.
+// Current TArray can reallocate and move FEntry objects, invalidating
+// references/pointers to map values. Chunks keep existing entries at
+// stable addresses while allowing new entries to be allocated without
+// moving previous ones. Keep at least one chunk allocated and release
+// completely free trailing chunks.
 template<typename TKey, typename TValue>
 struct TMap {
   TMap() = default;

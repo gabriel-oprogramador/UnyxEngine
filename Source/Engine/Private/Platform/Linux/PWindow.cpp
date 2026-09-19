@@ -518,7 +518,7 @@ void InternalCaptureMouse(bool bCapture) {
   }
   api.bMouseCaptured = bCapture;
   if(bCapture) {
-    //XDefineCursor(dpy, win, api.invisibleCursor);
+    XDefineCursor(dpy, win, api.invisibleCursor);
     const int maxAttempts = 10;
     const useconds_t retryDelay = 10000;
     int32 res;

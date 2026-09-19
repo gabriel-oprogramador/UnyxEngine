@@ -1,6 +1,7 @@
 #include <CoreMinimal.h>
 #include "Components/Components.h"
 #include "Systems/Systems.h"
+#include "Core/Bitset.h"
 
 DECLARE_STRUCT(FWeaponState)
 struct FWeaponState {
@@ -58,8 +59,32 @@ struct FExampleSystem {
   }
 };
 
+using FQueryMask = TBitset<256>;
+
 struct FTestMap {
   static void BeginPlay(FWorld& World) {
+    constexpr uint16 cameraID = 0;
+    constexpr uint16 transformID = 1;
+    constexpr uint16 spriteID = 2;
+    FQueryMask qMask{};  // Query
+    FQueryMask aMask{};  // Archetype
+
+    qMask.Set(cameraID);
+    qMask.Set(spriteID);
+    qMask.Set(transformID);
+
+    aMask.Set(cameraID);
+    aMask.Set(transformID);
+    aMask.Set(spriteID);
+
+    if(aMask.HasAll(qMask)) {
+      UE_INFO("HAS ALL");
+    } else if(aMask.HasAny(qMask)) {
+      UE_INFO("HAS ANY");
+    } else if(aMask.HasNone(qMask)) {
+      UE_INFO("HAS NONE");
+    }
+
     TMap<FName, FString> players = {
         {FName{"PlayerOne"}, "Gabriel"},  //
         {FName{"PlayerTwo"}, "Raphael"}   //
@@ -84,9 +109,9 @@ struct FTestMap {
 GAME_API void OnGameLoad(FModule& Module) {
   Module.AddSystem<FSetupSystem>();
   Module.AddSystem<FExampleSystem>();
-  Module.AddComponent<UPlayerState>();
-  Module.AddComponent<UCamera>();
   Module.AddSystem<FTestMap>();
+  Module.AddType<UPlayerState>();
+  Module.AddType<UCamera>();
 }
 
 GAME_API void OnGameUnload() {}

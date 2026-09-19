@@ -1,9 +1,9 @@
 #pragma once
 #include "Core/Core.h"
 #include "Runtime/World.h"
+#include "Runtime/Module.h"
 #include "GameFramework/Input.h"
 #include "GameFramework/Time.h"
-#include "Runtime/Module.h"
 
 struct ENGINE_API FGame {
   static uint32 WindowWidth();
@@ -33,5 +33,5 @@ private:
   static inline FInput Input;
   static inline FTime Time;
   static inline FWorld World;
-  static inline FModule Module;
+  static inline FModule Module{FName("Game")};
 };
