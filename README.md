@@ -1,9 +1,9 @@
+![Unyx Engine Banner](Content/Engine/Banner.png)
+
 **🚧 In Development**  
 ![Windows](https://img.shields.io/badge/Windows-WIP-gray)
 ![Linux](https://img.shields.io/badge/Linux-WIP-gray)
-![Web](https://img.shields.io/badge/Web-WIP-gray)
-
-![Unyx Engine Banner](Content/Engine/Banner.png)
+![Web](https://img.shields.io/badge/Web-WIP-gray)  
 
 # Unyx Engine
 
