@@ -1,0 +1,84 @@
+#include <CoreMinimal.h>
+#include <Renderer/RHI.h>
+#include <Platform/Event.h>
+#include <Platform/Platform.h>
+
+GAME_API void OnGameLoad();
+GAME_API void OnGameUnload();
+
+struct FApp final {
+  void Initialize() {
+    Platform::WindowInitOpenGL();
+    Platform::WindowInit(800, 450, TARGET_NAME);
+    OnGameLoad();
+    RHI::ClearColor(FColors::SKY);
+  }
+
+  void Terminate() {
+    OnGameUnload();
+    Platform::WindowTerm();
+  }
+
+  void Update() {
+    RHI::Clear();
+    Platform::WindowPollEvent();
+    ProcessEvents();
+    Platform::WindowSwapBuffers();
+  }
+
+  void ProcessEvents() {
+    PEvent event = {};
+    while(Platform::NextEvent(event)) {
+      switch(event.type) {
+        case PEventType::InputMap:
+        case PEventType::InputKey:
+        case PEventType::MousePos:
+        case PEventType::MouseDelta:
+        case PEventType::MouseScroll: {
+          break;
+        }
+        case PEventType::WindowResize: {
+          uint32 width = event.windowResize.width;
+          uint32 height = event.windowResize.height;
+          RHI::SetViewport(FViewport{0, 0, width, height});
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    }
+  }
+};
+
+#if defined(PLATFORM_WINDOWS) || defined(PLATFORM_LINUX)
+
+int main() {
+  UE_INFO("Running Game Standalone");
+  static FApp app = {};
+  app.Initialize();
+  while(!Platform::WindowShouldClose()) {
+    app.Update();
+  }
+  app.Terminate();
+  return 0;
+}
+
+#elif defined(PLATFORM_WEB)
+#include <emscripten.h>
+
+int main() {
+  UE_INFO("Running Game Standalone");
+  static FApp app = {};
+  app.Initialize();
+  auto MainLoop = []() {
+    if(Platform::WindowShouldClose()) {
+      app.Terminate();
+      emscripten_cancel_main_loop();
+    }
+    app.Update();
+  };
+  emscripten_set_main_loop(MainLoop, 0, true);
+  return 0;
+}
+#endif

@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Sandbox",
+            "type": "lldb",
+            "request": "launch",
+            "preLaunchTask": "build Sandbox",
+            "cwd": "${workspaceFolder}",
+            "program": "dummyPath",
+            "windows": {
+                "program": "${workspaceFolder}/Binaries/Windows/Development/Sandbox.exe"
+            },
+            "linux": {
+                "program": "${workspaceFolder}/Binaries/Linux/Development/Sandbox"
+            },
+            "args": [],
+            "stopOnEntry": false
+        }
+    ]
+}
